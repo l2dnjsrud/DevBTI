@@ -1,52 +1,102 @@
-import { useState } from 'react'
+import { useEffect } from 'react'
 import Head from 'next/head'
+import { ProgressBar } from '../components/ui/ProgressBar'
+import { QuestionCard } from '../components/QuestionCard'
+import { useQuestions } from '../hooks/useQuestions'
+import { useTest } from '../hooks/useTest'
+import { useRouter } from 'next/router'
 
 export default function Test() {
-  const [currentQuestion, setCurrentQuestion] = useState(0)
-  const [answers, setAnswers] = useState<{[key: string]: number | string}>({})
-
-  // Sample questions based on the documentation
-  const questions = [
-    {
-      id: "Q1",
-      text: "나는 버그를 해결할 때 원인을 끝까지 추적한다.",
-      type: "likert",
-      scale: ["전혀 아니다", "아니다", "보통이다", "그렇다", "매우 그렇다"]
-    },
-    {
-      id: "Q2",
-      text: "새로운 기술을 배울 때 문서를 먼저 읽고 이해하려고 노력한다.",
-      type: "likert",
-      scale: ["전혀 아니다", "아니다", "보통이다", "그렇다", "매우 그렇다"]
-    },
-    {
-      id: "Q3",
-      text: "팀원이 마감 하루 전에 기능 추가를 요청한다. 어떻게 할까?",
-      type: "sjt",
-      options: [
-        "협의 후 조정", 
-        "팀장에게 escalation", 
-        "무리해서라도 시도", 
-        "git push --force 🚨"
-      ]
-    }
-  ]
+  const router = useRouter()
+  const { questions, loading, error } = useQuestions()
+  const {
+    answers,
+    currentQuestionIndex,
+    setCurrentQuestionIndex,
+    setAnswer,
+    submitTest
+  } = useTest(questions)
 
   const handleAnswer = (value: number | string) => {
-    setAnswers({
-      ...answers,
-      [questions[currentQuestion].id]: value
-    })
+    if (questions.length === 0) return
     
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1)
+    setAnswer(questions[currentQuestionIndex].id, value)
+    
+    // Move to next question or submit if last question
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1)
     } else {
-      // Submit test
-      console.log("Test completed:", answers)
+      // Submit test (in a real app, you would handle the result)
+      handleSubmit()
     }
   }
 
-  const progress = ((currentQuestion + 1) / questions.length) * 100
+  const handleSubmit = async () => {
+    // In a real app, you would use a proper user ID
+    const result = await submitTest('anonymous-user')
+    if (result) {
+      // Navigate to results page
+      router.push('/result')
+    }
+  }
+
+  // If we're at the last question, auto-submit
+  useEffect(() => {
+    if (questions.length > 0 && currentQuestionIndex >= questions.length) {
+      handleSubmit()
+    }
+  }, [currentQuestionIndex, questions.length])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">질문지를 불러오는 중...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-xl shadow-lg max-w-md">
+          <h2 className="text-xl font-bold text-red-600 mb-4">오류 발생</h2>
+          <p className="text-gray-700 mb-6">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg"
+          >
+            다시 시도
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (questions.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">질문지가 없습니다</h2>
+          <p className="text-gray-700">관리자에게 문의하세요.</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Check if we've completed all questions
+  if (currentQuestionIndex >= questions.length) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">결과를 분석하는 중...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -58,71 +108,14 @@ export default function Test() {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           {/* Progress bar */}
-          <div className="mb-8">
-            <div className="flex justify-between mb-2">
-              <span className="text-sm font-medium text-indigo-600">
-                질문 {currentQuestion + 1} / {questions.length}
-              </span>
-              <span className="text-sm font-medium text-indigo-600">
-                {Math.round(progress)}%
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
-              <div 
-                className="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" 
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
-          </div>
+          <ProgressBar current={currentQuestionIndex + 1} total={questions.length} className="mb-8" />
 
           {/* Question card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              {questions[currentQuestion].text}
-            </h2>
-
-            {questions[currentQuestion].type === "likert" && (
-              <div className="space-y-3">
-                {(questions[currentQuestion] as any).scale.map((option: string, index: number) => (
-                  <button
-                    key={index}
-                    onClick={() => handleAnswer(index + 1)}
-                    className="w-full text-left p-4 rounded-lg border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 transition duration-200"
-                  >
-                    <div className="flex items-center">
-                      <div className="w-6 h-6 rounded-full border border-gray-300 mr-4 flex items-center justify-center">
-                        {answers[questions[currentQuestion].id] === index + 1 && (
-                          <div className="w-3 h-3 rounded-full bg-indigo-600"></div>
-                        )}
-                      </div>
-                      <span className="text-gray-800">{option}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {questions[currentQuestion].type === "sjt" && (
-              <div className="space-y-3">
-                {(questions[currentQuestion] as any).options.map((option: string, index: number) => (
-                  <button
-                    key={index}
-                    onClick={() => handleAnswer(option)}
-                    className="w-full text-left p-4 rounded-lg border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 transition duration-200"
-                  >
-                    <div className="flex items-center">
-                      <div className="w-6 h-6 rounded-full border border-gray-300 mr-4 flex items-center justify-center">
-                        {answers[questions[currentQuestion].id] === option && (
-                          <div className="w-3 h-3 rounded-full bg-indigo-600"></div>
-                        )}
-                      </div>
-                      <span className="text-gray-800">{option}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <QuestionCard 
+            question={questions[currentQuestionIndex]} 
+            onAnswer={handleAnswer}
+            initialValue={answers[questions[currentQuestionIndex].id]}
+          />
         </div>
       </main>
     </div>
