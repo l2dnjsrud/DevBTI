@@ -1,0 +1,9 @@
+{
+  "name": "supabase-functions",
+  "version": "1.0.0",
+  "description": "Supabase Edge Functions for Dev Personality Test",
+  "type": "module",
+  "dependencies": {
+    "typescript": "^4.9.5"
+  }
+}

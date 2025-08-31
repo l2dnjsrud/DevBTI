@@ -1,4 +1,5 @@
 import Head from 'next/head'
+import Link from 'next/link'
 
 export default function Home() {
   return (
@@ -18,12 +19,14 @@ export default function Home() {
             MBTI처럼 가볍게 시작해서 데이터 기반 분석으로 확장하는 개발자 전용 진단 서비스
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg text-lg transition duration-300">
-              테스트 시작하기
-            </button>
-            <button className="bg-white hover:bg-gray-100 text-indigo-600 border border-indigo-600 font-bold py-3 px-8 rounded-lg text-lg transition duration-300">
+            <Link href="/test">
+              <a className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg text-lg transition duration-300 text-center">
+                테스트 시작하기
+              </a>
+            </Link>
+            <a href="#" className="bg-white hover:bg-gray-100 text-indigo-600 border border-indigo-600 font-bold py-3 px-8 rounded-lg text-lg transition duration-300 text-center">
               샘플 결과 보기
-            </button>
+            </a>
           </div>
         </div>
 

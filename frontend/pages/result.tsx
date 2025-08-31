@@ -1,8 +1,13 @@
+import { useState, useEffect } from 'react'
 import Head from 'next/head'
+import { Result as ResultType } from '../services/apiService'
 
 export default function Result() {
-  // Sample result data
-  const result = {
+  const [result, setResult] = useState<ResultType | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  // Sample result data (in a real app, you would fetch this from an API)
+  const sampleResult: ResultType = {
     archetype: "전략가형 🧠",
     strengths: ["설계와 문제 해결에 강점", "새로운 기술에 대한 높은 적응력"],
     weaknesses: ["협업 적응력 낮음", "문서화에 대한 관심 부족"],
@@ -16,9 +21,18 @@ export default function Result() {
       P: 68,
       A: 55,
       L: 80,
-      M: 60
+      M: 60,
+      total: 67
     }
   }
+
+  useEffect(() => {
+    // Simulate API call
+    setTimeout(() => {
+      setResult(sampleResult)
+      setLoading(false)
+    }, 500)
+  }, [])
 
   const categories = [
     { id: 'C', name: 'Coding', description: '코딩 실력' },
@@ -27,6 +41,28 @@ export default function Result() {
     { id: 'L', name: 'Learning', description: '학습 능력' },
     { id: 'M', name: 'Mindset', description: '개발 마인드셋' }
   ]
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">결과를 분석하는 중...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!result) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">결과를 찾을 수 없습니다</h2>
+          <p className="text-gray-700">테스트를 먼저 진행해주세요.</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
