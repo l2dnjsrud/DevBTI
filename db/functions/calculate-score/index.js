@@ -47,11 +47,11 @@ serve(async (req) => {
     }
     
     // Normalize scores (0-100 range)
-    Object.keys(score).forEach(key => {
+    for (const key in score) {
       if (key !== 'total') {
-        score[key as keyof typeof score] = Math.min(100, Math.max(0, score[key as keyof typeof score]));
+        score[key] = Math.min(100, Math.max(0, score[key]));
       }
-    });
+    }
     
     // Calculate total
     const total = (score.C + score.P + score.A + score.L + score.M) / 5;
