@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import { Button, Progress } from 'flowbite-react'
+import { Button } from 'flowbite-react'
 import { HiArrowLeft, HiArrowRight } from 'react-icons/hi'
 import { useQuestions } from '../hooks/useQuestions'
 import { useTest } from '../hooks/useTest'
@@ -55,9 +55,9 @@ export default function Test() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">질문지를 불러오는 중...</p>
         </div>
       </div>
@@ -66,8 +66,8 @@ export default function Test() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center bg-white p-8 rounded-xl shadow-lg max-w-md">
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-xl shadow-lg max-w-md border border-gray-200">
           <h2 className="text-xl font-bold text-red-600 mb-4">오류 발생</h2>
           <p className="text-gray-700 mb-6">{error}</p>
           <Button onClick={() => window.location.reload()}>
@@ -80,7 +80,7 @@ export default function Test() {
 
   if (questions.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-bold text-gray-900 mb-4">질문지가 없습니다</h2>
           <p className="text-gray-700">관리자에게 문의하세요.</p>
@@ -92,9 +92,9 @@ export default function Test() {
   // Check if we've completed all questions
   if (currentQuestionIndex >= questions.length) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">결과를 분석하는 중...</p>
         </div>
       </div>
@@ -105,9 +105,9 @@ export default function Test() {
   const progressValue = ((currentQuestionIndex + 1) / questions.length) * 100
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       <Head>
-        <title>Dev Personality Test</title>
+        <title>DevBTI | 개발자 성격/역량 진단 테스트</title>
         <meta name="description" content="개발자 성격/역량 진단 테스트" />
       </Head>
 
@@ -116,43 +116,57 @@ export default function Test() {
           {/* Progress bar */}
           <div className="mb-8">
             <div className="flex justify-between mb-2">
-              <span className="text-sm font-medium text-indigo-600">
+              <span className="text-sm font-medium text-blue-600">
                 질문 {currentQuestionIndex + 1} / {questions.length}
               </span>
-              <span className="text-sm font-medium text-indigo-600">
+              <span className="text-sm font-medium text-blue-600">
                 {Math.round(progressValue)}%
               </span>
             </div>
-            <Progress progress={progressValue} color="indigo" className="h-2.5" />
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div 
+                className="bg-blue-600 h-2.5 rounded-full" 
+                style={{ width: `${progressValue}%` }}
+              ></div>
+            </div>
           </div>
 
           {/* Question card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 md:p-8 mb-8">
+            <div className="text-sm text-blue-600 font-medium mb-2">
+              질문 {currentQuestionIndex + 1}
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-6">
               {currentQuestion.text}
             </h2>
 
             <div className="space-y-3">
               {currentQuestion.type === 'likert' && currentQuestion.scale?.map((option, index) => (
-                <Button
+                <button
                   key={index}
                   onClick={() => handleAnswer(index + 1)}
-                  color={answers[currentQuestion.id] === index + 1 ? "dark" : "light"}
-                  className="w-full justify-start text-left py-3 px-4"
+                  className={`w-full text-left py-3 px-4 rounded-lg border transition-colors ${
+                    answers[currentQuestion.id] === index + 1 
+                      ? 'bg-blue-50 border-blue-500 text-blue-700' 
+                      : 'border-gray-200 hover:bg-gray-50'
+                  }`}
                 >
                   <span className="text-gray-800">{option}</span>
-                </Button>
+                </button>
               ))}
               
               {currentQuestion.type === 'sjt' && currentQuestion.options?.map((option, index) => (
-                <Button
+                <button
                   key={index}
                   onClick={() => handleAnswer(option)}
-                  color={answers[currentQuestion.id] === option ? "dark" : "light"}
-                  className="w-full justify-start text-left py-3 px-4"
+                  className={`w-full text-left py-3 px-4 rounded-lg border transition-colors ${
+                    answers[currentQuestion.id] === option 
+                      ? 'bg-blue-50 border-blue-500 text-blue-700' 
+                      : 'border-gray-200 hover:bg-gray-50'
+                  }`}
                 >
                   <span className="text-gray-800">{option}</span>
-                </Button>
+                </button>
               ))}
             </div>
           </div>
@@ -163,7 +177,7 @@ export default function Test() {
               onClick={handlePrevious}
               disabled={currentQuestionIndex === 0}
               color="light"
-              className="flex items-center"
+              className="flex items-center border border-gray-300"
             >
               <HiArrowLeft className="mr-2 h-5 w-5" />
               이전
@@ -177,7 +191,7 @@ export default function Test() {
                     setCurrentQuestionIndex(currentQuestionIndex + 1)
                   }
                 }}
-                className="flex items-center"
+                className="flex items-center bg-blue-600 hover:bg-blue-700"
               >
                 다음
                 <HiArrowRight className="ml-2 h-5 w-5" />
@@ -185,7 +199,7 @@ export default function Test() {
             ) : (
               <Button
                 onClick={handleSubmit}
-                className="flex items-center"
+                className="flex items-center bg-blue-600 hover:bg-blue-700"
               >
                 제출하기
                 <HiArrowRight className="ml-2 h-5 w-5" />
